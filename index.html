@@ -1,0 +1,2181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Discern</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #14141f;
+      --surface-2: #1e1e2e;
+      --border: #2a2a3a;
+      --text: #e8e8f0;
+      --text-muted: #8888a0;
+      --accent: #d4a855;
+      --accent-glow: rgba(212, 168, 85, 0.3);
+      --accent-dim: rgba(212, 168, 85, 0.08);
+      --calm: #00b894;
+      --calm-glow: rgba(0, 184, 148, 0.3);
+      --alert: #e17055;
+      --alert-glow: rgba(225, 112, 85, 0.3);
+      --warm: #fdcb6e;
+      --purple: #6c5ce7;
+      --purple-glow: rgba(108, 92, 231, 0.3);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    .app {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      min-height: 100dvh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      flex-shrink: 0;
+    }
+    .logo {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), #e8c67a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 8px 0;
+    }
+    .back-btn:hover { color: var(--text); }
+
+    .scrollable {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 100px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .scrollable::-webkit-scrollbar { display: none; }
+
+    .greeting {
+      margin-top: 20px;
+      margin-bottom: 8px;
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: -0.5px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 18px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent), #c49a3c);
+      color: #1a1a2e;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: auto;
+      margin-bottom: 24px;
+      flex-shrink: 0;
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px var(--accent-glow);
+    }
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-secondary {
+      width: 100%;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 12px;
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+    }
+
+    /* Bio card */
+    .bio-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .bio-card::before {
+      content: '';
+      position: absolute;
+      top: -50%; right: -50%;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      opacity: 0.2;
+    }
+    .bio-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .bio-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+    .bio-status {
+      font-size: 11px;
+      color: var(--calm);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .bio-status .dot {
+      width: 5px; height: 5px;
+      background: var(--calm);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .bio-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      position: relative;
+    }
+    .metric { text-align: center; }
+    .metric-value { font-size: 24px; font-weight: 600; letter-spacing: -1px; }
+    .metric-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .metric-unit { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+
+    .hrv-wave { margin-top: 16px; height: 50px; position: relative; }
+    .hrv-wave svg { width: 100%; height: 100%; }
+    .hrv-line {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 2;
+      filter: drop-shadow(0 0 4px var(--accent-glow));
+    }
+
+    /* Input */
+    .text-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .text-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .text-input::placeholder { color: var(--text-muted); }
+    textarea.text-input { resize: none; min-height: 90px; }
+
+    .input-wrap { margin-bottom: 16px; }
+
+    /* Tags */
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .tag {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 9px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .tag:hover, .tag.selected {
+      border-color: var(--accent);
+      color: var(--text);
+      background: var(--accent-dim);
+    }
+
+    /* Stakes */
+    .stakes-row { display: flex; gap: 8px; margin-bottom: 20px; }
+    .stake-btn {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+    .stake-btn:hover { border-color: var(--accent); }
+    .stake-btn.selected {
+      border-color: var(--accent);
+      color: var(--text);
+      background: var(--accent-dim);
+    }
+
+    /* Signal cards */
+    .signal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .signal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .signal-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .signal-card.selected {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .signal-icon { font-size: 26px; margin-bottom: 6px; }
+    .signal-name { font-size: 14px; font-weight: 500; }
+    .signal-desc { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.3; }
+
+    /* Breathwork */
+    .breathe-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .breathe-timer { font-size: 48px; font-weight: 200; letter-spacing: -2px; margin-bottom: 6px; }
+    .breathe-phase {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 28px;
+    }
+    .breathe-circle-outer {
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 32px;
+    }
+    .breathe-ring {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      opacity: 0.15;
+      animation: breatheRing 8s ease-in-out infinite;
+    }
+    .breathe-ring:nth-child(2) { animation-delay: 0.5s; inset: 8px; }
+    .breathe-ring:nth-child(3) { animation-delay: 1s; inset: 16px; }
+    @keyframes breatheRing {
+      0%, 100% { transform: scale(0.8); opacity: 0.1; }
+      25% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1); opacity: 0.5; }
+      75% { transform: scale(0.8); opacity: 0.1; }
+    }
+    .breathe-circle {
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, var(--accent), #a07830);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+    .breathe-circle.active { animation: breatheCircle 8s ease-in-out infinite; }
+    @keyframes breatheCircle {
+      0%, 100% { transform: scale(0.7); }
+      25% { transform: scale(1); }
+      50% { transform: scale(1); }
+      75% { transform: scale(0.7); }
+    }
+    .breathe-text { font-size: 16px; font-weight: 600; color: #1a1a2e; text-align: center; }
+    .breathe-progress { display: flex; gap: 5px; margin-bottom: 32px; }
+    .breathe-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+    .breathe-dot.done { background: var(--accent); }
+
+    .arousal-meter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      width: 100%;
+    }
+    .arousal-bar-bg {
+      flex: 1; height: 6px;
+      background: var(--surface-2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .arousal-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1s ease, background 1s ease;
+    }
+    .arousal-label { font-size: 11px; color: var(--text-muted); min-width: 50px; }
+    .arousal-state { font-size: 12px; font-weight: 500; min-width: 70px; text-align: right; }
+
+    /* Gauge */
+    .readiness-gauge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px 0 28px;
+    }
+    .gauge-ring { width: 170px; height: 170px; position: relative; margin-bottom: 14px; }
+    .gauge-ring svg { width: 100%; height: 100%; }
+    .gauge-bg { fill: none; stroke: var(--surface-2); stroke-width: 8; }
+    .gauge-fill {
+      fill: none; stroke-width: 8; stroke-linecap: round;
+      transition: stroke-dashoffset 1.5s ease, stroke 1s ease;
+    }
+    .gauge-center {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .gauge-value { font-size: 30px; font-weight: 600; letter-spacing: -1px; }
+    .gauge-label {
+      font-size: 11px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;
+    }
+    .readiness-verdict { font-size: 18px; font-weight: 500; text-align: center; }
+    .readiness-sub {
+      font-size: 13px; color: var(--text-muted);
+      text-align: center; margin-top: 6px; line-height: 1.5;
+    }
+
+    /* Insight cards */
+    .insight-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+    .insight-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .insight-icon {
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .insight-icon.signal { background: rgba(212, 168, 85, 0.15); }
+    .insight-icon.body { background: rgba(0, 184, 148, 0.15); }
+    .insight-icon.discern { background: rgba(108, 92, 231, 0.15); }
+    .insight-icon.outcome { background: rgba(225, 112, 85, 0.15); }
+    .insight-icon.pattern { background: rgba(212, 168, 85, 0.15); }
+    .insight-title { font-size: 14px; font-weight: 600; }
+    .insight-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* Decision journal list */
+    .decision-list { margin-bottom: 20px; }
+    .decision-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .decision-item:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .decision-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .decision-item-title {
+      font-size: 15px;
+      font-weight: 500;
+      flex: 1;
+      margin-right: 12px;
+    }
+    .decision-item-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .decision-item-meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .decision-badge {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-weight: 500;
+    }
+    .badge-stakes-high { background: rgba(225, 112, 85, 0.15); color: var(--alert); }
+    .badge-stakes-medium { background: rgba(253, 203, 110, 0.15); color: var(--warm); }
+    .badge-stakes-low { background: rgba(0, 184, 148, 0.15); color: var(--calm); }
+    .badge-signal {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .badge-outcome {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-weight: 500;
+    }
+    .badge-right { background: rgba(0, 184, 148, 0.15); color: var(--calm); }
+    .badge-wrong { background: rgba(225, 112, 85, 0.15); color: var(--alert); }
+    .badge-pending { background: rgba(136, 136, 160, 0.15); color: var(--text-muted); }
+    .badge-mixed { background: rgba(253, 203, 110, 0.15); color: var(--warm); }
+
+    .decision-item-readiness {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .mini-bar-bg {
+      flex: 1;
+      height: 4px;
+      background: var(--surface-2);
+      border-radius: 2px;
+      overflow: hidden;
+      max-width: 80px;
+    }
+    .mini-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+    }
+    .mini-readiness-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Patterns panel */
+    .pattern-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+    .pattern-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .pattern-stat:last-child { border-bottom: none; }
+    .pattern-stat-label { font-size: 13px; color: var(--text-muted); }
+    .pattern-stat-value { font-size: 15px; font-weight: 600; }
+
+    /* Outcome buttons */
+    .outcome-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .outcome-btn {
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+    .outcome-btn:hover { transform: translateY(-1px); }
+    .outcome-btn.selected { box-shadow: 0 0 15px var(--accent-glow); }
+    .outcome-btn[data-outcome="right"].selected {
+      border-color: var(--calm);
+      background: rgba(0, 184, 148, 0.08);
+    }
+    .outcome-btn[data-outcome="wrong"].selected {
+      border-color: var(--alert);
+      background: rgba(225, 112, 85, 0.08);
+    }
+    .outcome-btn[data-outcome="mixed"].selected {
+      border-color: var(--warm);
+      background: rgba(253, 203, 110, 0.08);
+    }
+    .outcome-btn[data-outcome="tbd"].selected {
+      border-color: var(--text-muted);
+      background: rgba(136, 136, 160, 0.08);
+    }
+    .outcome-icon { font-size: 24px; margin-bottom: 6px; }
+    .outcome-label { font-size: 13px; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-title { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+    .empty-desc { font-size: 13px; line-height: 1.5; }
+
+    /* Clarity slider */
+    .slider-section { width: 100%; margin-bottom: 24px; }
+    .slider-labels { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .slider-labels span { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .slider-value { font-size: 14px; font-weight: 600; color: var(--accent); }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%; height: 6px;
+      border-radius: 3px;
+      background: var(--surface-2);
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    /* Complete */
+    .complete-container {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .complete-check {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #e8c67a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      margin-bottom: 20px;
+      animation: scaleIn 0.5s ease-out;
+    }
+    @keyframes scaleIn { from { transform: scale(0); } to { transform: scale(1); } }
+    .complete-title { font-size: 24px; font-weight: 300; margin-bottom: 10px; }
+    .complete-message {
+      color: var(--text-muted);
+      font-size: 14px; line-height: 1.6;
+      max-width: 300px; margin-bottom: 32px;
+    }
+
+    /* Tab bar */
+    .tab-bar {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      background: rgba(10, 10, 15, 0.92);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0 26px;
+      z-index: 100;
+    }
+    .tab-item {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      padding: 4px 16px;
+      transition: color 0.2s;
+    }
+    .tab-item.active { color: var(--accent); }
+    .tab-icon { font-size: 20px; }
+
+    .mt-16 { margin-top: 16px; }
+    .mt-24 { margin-top: 24px; }
+    .mb-12 { margin-bottom: 12px; }
+    .mb-20 { margin-bottom: 20px; }
+
+    /* Filter tabs */
+    .filter-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+    .filter-btn {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .filter-btn.active {
+      border-color: var(--accent);
+      color: var(--text);
+      background: var(--accent-dim);
+    }
+
+    .accuracy-hero {
+      text-align: center;
+      padding: 24px 0;
+      margin-bottom: 20px;
+    }
+    .accuracy-number {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, var(--accent), #e8c67a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .accuracy-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    .accuracy-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Elevation alert banner */
+    .elevation-banner {
+      background: rgba(225, 112, 85, 0.1);
+      border: 1px solid rgba(225, 112, 85, 0.3);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .elevation-banner.visible { display: block; }
+    .elevation-banner.warning {
+      background: rgba(253, 203, 110, 0.1);
+      border-color: rgba(253, 203, 110, 0.3);
+    }
+    .elevation-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .elevation-icon { font-size: 18px; }
+    .elevation-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--alert);
+    }
+    .elevation-banner.warning .elevation-title { color: var(--warm); }
+    .elevation-body {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .elevation-signals {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .elevation-signal-item {
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 4px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+    }
+    .elevation-signal-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--alert);
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .elevation-banner.warning .elevation-signal-dot { background: var(--warm); }
+
+    /* Live data badge */
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--calm);
+      padding: 3px 8px;
+      border-radius: 100px;
+      background: rgba(0, 184, 148, 0.1);
+      margin-left: 8px;
+    }
+    .live-badge .dot {
+      width: 4px;
+      height: 4px;
+      background: var(--calm);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    .sim-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 10px;
+      color: var(--text-muted);
+      padding: 3px 8px;
+      border-radius: 100px;
+      background: rgba(136, 136, 160, 0.1);
+      margin-left: 8px;
+    }
+
+    /* Oura connected card style */
+    .oura-connected {
+      border-color: rgba(0, 184, 148, 0.3) !important;
+    }
+    .oura-connected .insight-body { color: var(--calm); }
+
+    /* CSS Icons (replacing emojis) */
+    .icon {
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .icon svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Expandable detail section */
+    .expand-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 12px 0;
+      transition: color 0.2s;
+      width: 100%;
+    }
+    .expand-toggle:hover { color: var(--text); }
+    .expand-arrow {
+      transition: transform 0.3s;
+      font-size: 10px;
+    }
+    .expand-toggle.open .expand-arrow { transform: rotate(90deg); }
+    .expand-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .expand-content.open {
+      max-height: 500px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- ==================== HOME ==================== -->
+    <div class="screen active" id="screen-home">
+      <div class="header">
+        <div class="logo">discern</div>
+        <div style="font-size: 12px; color: var(--text-muted);">v1.0</div>
+      </div>
+      <div class="scrollable">
+        <div class="greeting">What decision is in front of you?</div>
+        <div class="subtitle">Before you decide, let's check what your body already knows.</div>
+
+        <!-- Elevation alert (shown when Oura detects elevation) -->
+        <div class="elevation-banner" id="elevation-banner">
+          <div class="elevation-header">
+            <span class="elevation-icon" style="font-size:14px; color: var(--alert);">●</span>
+            <span class="elevation-title" id="elevation-title">Your system is elevated</span>
+          </div>
+          <div class="elevation-body" id="elevation-body"></div>
+          <div class="elevation-signals" id="elevation-signals"></div>
+        </div>
+
+        <div class="bio-card">
+          <div class="bio-header">
+            <div class="bio-title">Live Biometrics <span id="bio-source-badge" class="sim-badge">Simulated</span></div>
+            <div class="bio-status"><span class="dot"></span> <span id="bio-status-text">Connected</span></div>
+          </div>
+          <div class="bio-metrics">
+            <div class="metric">
+              <div class="metric-value" id="hrv-value">42 <span class="metric-unit">ms</span></div>
+              <div class="metric-label">HRV</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value" id="hr-value">72 <span class="metric-unit">bpm</span></div>
+              <div class="metric-label">Heart Rate</div>
+            </div>
+            <div class="metric">
+              <div class="metric-value" id="resp-value">14 <span class="metric-unit">/m</span></div>
+              <div class="metric-label">Resp Rate</div>
+            </div>
+          </div>
+          <div class="hrv-wave">
+            <svg viewBox="0 0 380 50" preserveAspectRatio="none">
+              <path class="hrv-line" id="hrv-path" d="M0,25 Q20,25 40,25"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="section-label">The Decision</div>
+        <div class="input-wrap">
+          <input type="text" class="text-input" id="decision-input"
+            placeholder="e.g. Whether to promote Sarah to VP...">
+        </div>
+        <div class="tags" id="decision-tags">
+          <div class="tag" data-val="Hiring / firing">Hiring / firing</div>
+          <div class="tag" data-val="Strategic pivot">Strategic pivot</div>
+          <div class="tag" data-val="Difficult conversation">Difficult conversation</div>
+          <div class="tag" data-val="Investment / spend">Investment / spend</div>
+          <div class="tag" data-val="Partnership">Partnership</div>
+          <div class="tag" data-val="Saying no">Saying no</div>
+        </div>
+
+        <div class="section-label">Stakes</div>
+        <div class="stakes-row" id="stakes-row">
+          <div class="stake-btn" data-stakes="low">Low</div>
+          <div class="stake-btn selected" data-stakes="medium">Medium</div>
+          <div class="stake-btn" data-stakes="high">High</div>
+        </div>
+
+        <button class="expand-toggle" id="detail-toggle" onclick="toggleDetail()">
+          <span class="expand-arrow">▶</span> Add more detail (optional)
+        </button>
+        <div class="expand-content" id="detail-expand">
+          <div class="section-label" style="margin-top: 8px;">Context</div>
+          <div class="input-wrap">
+            <textarea class="text-input" id="context-input" placeholder="What's the situation? What are you weighing?"></textarea>
+          </div>
+
+          <div class="section-label">Expected outcome</div>
+          <div class="input-wrap">
+            <textarea class="text-input" id="expected-input" placeholder="What do you think will happen? How will you know it was the right call?"></textarea>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-checkin" disabled>Begin body check-in</button>
+    </div>
+
+    <!-- ==================== BODY SIGNAL ==================== -->
+    <div class="screen" id="screen-signal">
+      <div class="header">
+        <button class="back-btn" onclick="showScreen('home')">← Back</button>
+        <div class="logo">discern</div>
+      </div>
+      <div class="scrollable">
+        <div class="greeting" style="font-size: 22px;">Think about this decision. Then pause and scan.</div>
+        <div class="subtitle" id="signal-sub">As you hold this in mind, notice what shifts in your body.</div>
+
+        <div class="section-label">What's your body saying?</div>
+        <div class="signal-grid" id="signal-grid">
+          <div class="signal-card" data-signal="expansion">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--calm)" stroke-width="2"><path d="M7 17L17 7M17 7H10M17 7V14"/></svg></div>
+            <div class="signal-name">Expansion</div>
+            <div class="signal-desc">Opening, energy, leaning in</div>
+          </div>
+          <div class="signal-card" data-signal="contraction">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--alert)" stroke-width="2"><path d="M17 7L7 17M7 17H14M7 17V10"/></svg></div>
+            <div class="signal-name">Contraction</div>
+            <div class="signal-desc">Tightening, pulling back</div>
+          </div>
+          <div class="signal-card" data-signal="stillness">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <div class="signal-name">Stillness</div>
+            <div class="signal-desc">Calm, neutral, centered</div>
+          </div>
+          <div class="signal-card" data-signal="agitation">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warm)" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <div class="signal-name">Agitation</div>
+            <div class="signal-desc">Buzzing, restless, urgent</div>
+          </div>
+        </div>
+
+        <div class="section-label">Where in your body?</div>
+        <div class="signal-grid" id="bodyloc-grid">
+          <div class="signal-card" data-bodyloc="gut">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><ellipse cx="12" cy="14" rx="7" ry="6"/><path d="M12 8V4"/></svg></div>
+            <div class="signal-name">Gut</div>
+            <div class="signal-desc">Deep knowing, instinct</div>
+          </div>
+          <div class="signal-card" data-bodyloc="chest">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+            <div class="signal-name">Chest / Heart</div>
+            <div class="signal-desc">Values, care, alignment</div>
+          </div>
+          <div class="signal-card" data-bodyloc="throat">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M8 12v3a4 4 0 0 0 8 0v-3"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
+            <div class="signal-name">Throat</div>
+            <div class="signal-desc">Expression, truth</div>
+          </div>
+          <div class="signal-card" data-bodyloc="head">
+            <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><circle cx="12" cy="10" r="7"/><path d="M9 22h6M12 17v5"/></svg></div>
+            <div class="signal-name">Head</div>
+            <div class="signal-desc">Analysis, overthinking</div>
+          </div>
+        </div>
+
+        <div class="slider-section mt-16">
+          <div class="slider-labels">
+            <span>Signal Clarity</span>
+            <span class="slider-value" id="clarity-val">5</span>
+          </div>
+          <input type="range" min="1" max="10" value="5" id="clarity-slider">
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-center" disabled>Center before deciding</button>
+    </div>
+
+    <!-- ==================== BREATHWORK ==================== -->
+    <div class="screen" id="screen-breathe">
+      <div class="header">
+        <button class="back-btn" onclick="stopBreathing(); showScreen('signal')">← Back</button>
+        <div class="logo">discern</div>
+      </div>
+      <div class="breathe-container">
+        <div class="breathe-timer" id="breathe-timer">2:00</div>
+        <div class="breathe-phase" id="breathe-phase">Ready</div>
+        <div class="breathe-circle-outer">
+          <div class="breathe-ring"></div>
+          <div class="breathe-ring"></div>
+          <div class="breathe-ring"></div>
+          <div class="breathe-circle" id="breathe-circle">
+            <div class="breathe-text" id="breathe-text">Start</div>
+          </div>
+        </div>
+        <div class="breathe-progress" id="breathe-progress"></div>
+        <div class="arousal-meter">
+          <div class="arousal-label">Arousal</div>
+          <div class="arousal-bar-bg">
+            <div class="arousal-bar-fill" id="breathe-arousal" style="width: 65%; background: var(--alert);"></div>
+          </div>
+          <div class="arousal-state" id="breathe-state" style="color: var(--alert);">Elevated</div>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-to-reflect" style="display:none">Continue to clarity</button>
+    </div>
+
+    <!-- ==================== REFLECTION ==================== -->
+    <div class="screen" id="screen-reflect">
+      <div class="header">
+        <div class="logo">discern</div>
+      </div>
+      <div class="scrollable">
+        <div class="greeting" style="font-size: 22px;">Your body's read</div>
+        <div class="subtitle">After centering, here's what your nervous system is telling you.</div>
+
+        <div class="readiness-gauge">
+          <div class="gauge-ring">
+            <svg viewBox="0 0 170 170">
+              <circle class="gauge-bg" cx="85" cy="85" r="72" transform="rotate(-90 85 85)"/>
+              <circle class="gauge-fill" id="gauge-fill" cx="85" cy="85" r="72" transform="rotate(-90 85 85)"
+                stroke-dasharray="452" stroke-dashoffset="452" stroke="var(--accent)"/>
+            </svg>
+            <div class="gauge-center">
+              <div class="gauge-value" id="gauge-value">—</div>
+              <div class="gauge-label">Readiness</div>
+            </div>
+          </div>
+          <div class="readiness-verdict" id="readiness-verdict"></div>
+          <div class="readiness-sub" id="readiness-sub"></div>
+        </div>
+
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon signal"><svg viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg></div>
+            <div class="insight-title">Somatic Signal</div>
+          </div>
+          <div class="insight-body" id="insight-signal"></div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon body"><svg viewBox="0 0 20 20" fill="none" stroke="var(--calm)" stroke-width="1.5"><path d="M3 10h2l2-4 3 8 2-4h5"/></svg></div>
+            <div class="insight-title">Nervous System</div>
+          </div>
+          <div class="insight-body" id="insight-nervous"></div>
+        </div>
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon discern"><svg viewBox="0 0 20 20" fill="none" stroke="var(--purple)" stroke-width="1.5"><path d="M10 3v14M5 8l5-5 5 5M5 12l5 5 5-5"/></svg></div>
+            <div class="insight-title">Discernment Note</div>
+          </div>
+          <div class="insight-body" id="insight-discernment"></div>
+        </div>
+
+        <div class="section-label mt-24">Capture your clarity (optional)</div>
+        <textarea class="text-input mb-20" id="clarity-journal" placeholder="What's clear to you now that wasn't before?"></textarea>
+      </div>
+      <button class="btn-primary" id="btn-save-decision">Save & complete</button>
+    </div>
+
+    <!-- ==================== COMPLETE ==================== -->
+    <div class="screen" id="screen-complete">
+      <div class="complete-container">
+        <div class="complete-check">✓</div>
+        <div class="complete-title">Decision logged</div>
+        <div class="complete-message">You paused before deciding. Come back to mark the outcome — that's where the real learning happens.</div>
+        <button class="btn-primary" onclick="switchTab('home')" style="max-width: 260px;">New check-in</button>
+        <button class="btn-secondary" onclick="switchTab('journal')" style="max-width: 260px;">View journal</button>
+      </div>
+    </div>
+
+    <!-- ==================== JOURNAL (HISTORY) ==================== -->
+    <div class="screen" id="screen-journal">
+      <div class="header">
+        <div class="logo">discern</div>
+        <div style="font-size: 12px; color: var(--text-muted);" id="journal-count">0 decisions</div>
+      </div>
+      <div class="scrollable">
+        <div class="greeting" style="font-size: 22px;">Decision Journal</div>
+        <div class="subtitle">Track outcomes. Calibrate your instinct.</div>
+
+        <div class="filter-row" id="filter-row">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="pending">Pending</button>
+          <button class="filter-btn" data-filter="right">Right call</button>
+          <button class="filter-btn" data-filter="wrong">Wrong call</button>
+          <button class="filter-btn" data-filter="mixed">Mixed</button>
+        </div>
+
+        <div class="decision-list" id="decision-list"></div>
+      </div>
+    </div>
+
+    <!-- ==================== DECISION DETAIL ==================== -->
+    <div class="screen" id="screen-detail">
+      <div class="header">
+        <button class="back-btn" onclick="showScreen('journal')">← Journal</button>
+        <div class="logo">discern</div>
+      </div>
+      <div class="scrollable">
+        <div class="greeting" style="font-size: 20px;" id="detail-title"></div>
+        <div class="subtitle" id="detail-date"></div>
+
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon signal"><svg viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.5"><rect x="3" y="3" width="14" height="14" rx="2"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="12" x2="11" y2="12"/></svg></div>
+            <div class="insight-title">Context</div>
+          </div>
+          <div class="insight-body" id="detail-context"></div>
+        </div>
+
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon body"><svg viewBox="0 0 20 20" fill="none" stroke="var(--calm)" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4"/><circle cx="10" cy="14" r="0.5" fill="var(--calm)"/></svg></div>
+            <div class="insight-title">Expected Outcome</div>
+          </div>
+          <div class="insight-body" id="detail-expected"></div>
+        </div>
+
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon signal"><svg viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg></div>
+            <div class="insight-title">Body Signal at Decision Time</div>
+          </div>
+          <div class="insight-body" id="detail-signal"></div>
+        </div>
+
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon discern"><svg viewBox="0 0 20 20" fill="none" stroke="var(--purple)" stroke-width="1.5"><path d="M4 4h12v12H4z" rx="1"/><line x1="7" y1="8" x2="13" y2="8"/><line x1="7" y1="11" x2="10" y2="11"/></svg></div>
+            <div class="insight-title">Clarity Notes</div>
+          </div>
+          <div class="insight-body" id="detail-clarity"></div>
+        </div>
+
+        <div class="section-label mt-24">Mark Outcome</div>
+        <div class="outcome-grid" id="outcome-grid">
+          <div class="outcome-btn" data-outcome="right">
+            <div class="outcome-icon" style="color: var(--calm);">&#10003;</div>
+            <div class="outcome-label">Right call</div>
+          </div>
+          <div class="outcome-btn" data-outcome="wrong">
+            <div class="outcome-icon" style="color: var(--alert);">&#10007;</div>
+            <div class="outcome-label">Wrong call</div>
+          </div>
+          <div class="outcome-btn" data-outcome="mixed">
+            <div class="outcome-icon" style="color: var(--warm);">&#8651;</div>
+            <div class="outcome-label">Mixed</div>
+          </div>
+          <div class="outcome-btn" data-outcome="tbd">
+            <div class="outcome-icon" style="color: var(--text-muted);">&#8987;</div>
+            <div class="outcome-label">Too early</div>
+          </div>
+        </div>
+
+        <div class="section-label">What actually happened?</div>
+        <textarea class="text-input mb-20" id="detail-outcome-notes" placeholder="Describe the actual outcome..."></textarea>
+
+        <div class="section-label">What did you learn?</div>
+        <textarea class="text-input mb-20" id="detail-learning" placeholder="What would you do differently? What would you repeat?"></textarea>
+      </div>
+      <button class="btn-primary" id="btn-save-outcome">Save outcome</button>
+    </div>
+
+    <!-- ==================== PATTERNS ==================== -->
+    <div class="screen" id="screen-patterns">
+      <div class="header">
+        <div class="logo">discern</div>
+      </div>
+      <div class="scrollable">
+        <div class="greeting" style="font-size: 22px;">Your Patterns</div>
+        <div class="subtitle">What your decision history reveals about your somatic intelligence.</div>
+
+        <div class="accuracy-hero" id="accuracy-hero">
+          <div class="accuracy-number" id="accuracy-number">—</div>
+          <div class="accuracy-label">Overall Accuracy</div>
+          <div class="accuracy-sub" id="accuracy-sub">based on 0 reviewed decisions</div>
+        </div>
+
+        <div class="section-label">Signal Accuracy</div>
+        <div class="pattern-card" id="signal-accuracy-card">
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Expansion → Right call</div>
+            <div class="pattern-stat-value" id="pat-expansion">—</div>
+          </div>
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Contraction → Right to wait</div>
+            <div class="pattern-stat-value" id="pat-contraction">—</div>
+          </div>
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Stillness → Right call</div>
+            <div class="pattern-stat-value" id="pat-stillness">—</div>
+          </div>
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Agitation → Signal value</div>
+            <div class="pattern-stat-value" id="pat-agitation">—</div>
+          </div>
+        </div>
+
+        <div class="section-label mt-24">Body Location Accuracy</div>
+        <div class="pattern-card" id="body-accuracy-card">
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Gut decisions</div>
+            <div class="pattern-stat-value" id="pat-gut">—</div>
+          </div>
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Heart decisions</div>
+            <div class="pattern-stat-value" id="pat-chest">—</div>
+          </div>
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Throat decisions</div>
+            <div class="pattern-stat-value" id="pat-throat">—</div>
+          </div>
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Head decisions</div>
+            <div class="pattern-stat-value" id="pat-head">—</div>
+          </div>
+        </div>
+
+        <div class="section-label mt-24">Stakes Accuracy</div>
+        <div class="pattern-card">
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">High stakes decisions</div>
+            <div class="pattern-stat-value" id="pat-high">—</div>
+          </div>
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Medium stakes decisions</div>
+            <div class="pattern-stat-value" id="pat-medium">—</div>
+          </div>
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Low stakes decisions</div>
+            <div class="pattern-stat-value" id="pat-low">—</div>
+          </div>
+        </div>
+
+        <div class="insight-card mt-24" id="pattern-insight">
+          <div class="insight-header">
+            <div class="insight-icon pattern"><svg viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.5"><path d="M10 3a5 5 0 0 1 3 9v2H7v-2a5 5 0 0 1 3-9z"/><line x1="8" y1="17" x2="12" y2="17"/></svg></div>
+            <div class="insight-title">Key Insight</div>
+          </div>
+          <div class="insight-body" id="pattern-insight-body">Log more decisions and mark their outcomes to unlock patterns in your somatic intelligence.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB BAR -->
+    <div class="tab-bar">
+      <button class="tab-item active" data-tab="home">
+        <span class="tab-icon">◉</span>
+        Check-in
+      </button>
+      <button class="tab-item" data-tab="journal">
+        <span class="tab-icon">◫</span>
+        Journal
+      </button>
+      <button class="tab-item" data-tab="patterns">
+        <span class="tab-icon">◧</span>
+        Patterns
+      </button>
+      <button class="tab-item" data-tab="settings">
+        <span class="tab-icon">☰</span>
+        Settings
+      </button>
+    </div>
+
+    <!-- ==================== SETTINGS ==================== -->
+    <div class="screen" id="screen-settings">
+      <div class="header">
+        <div class="logo">discern</div>
+      </div>
+      <div class="scrollable">
+        <div class="greeting" style="font-size: 22px;">Settings</div>
+        <div class="subtitle">Connect your wearable and configure your experience.</div>
+
+        <!-- Oura connection -->
+        <div class="section-label">Wearable Connection</div>
+        <div class="insight-card" id="oura-status-card">
+          <div class="insight-header">
+            <div class="insight-icon signal"><svg viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.5"><circle cx="10" cy="11" r="6"/><path d="M8 5a4 4 0 0 1 4 0"/></svg></div>
+            <div class="insight-title">Oura Ring</div>
+          </div>
+          <div class="insight-body" id="oura-status-text">Not connected. Add your Personal Access Token to see live biometrics.</div>
+        </div>
+
+        <div class="section-label mt-24">Oura Personal Access Token</div>
+        <div class="input-wrap">
+          <input type="password" class="text-input" id="oura-token-input"
+            placeholder="Paste your token here...">
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+          Get your token at <span style="color: var(--accent);">cloud.ouraring.com</span> → Personal Access Tokens → Create New Token. Select all scopes.
+        </div>
+        <button class="btn-primary" id="btn-connect-oura" style="margin-bottom: 12px;">Connect Oura Ring</button>
+        <button class="btn-secondary" id="btn-disconnect-oura" style="display:none;">Disconnect</button>
+
+        <!-- Connection test result -->
+        <div id="oura-test-result" style="display:none; margin-bottom: 20px;">
+          <div class="insight-card">
+            <div class="insight-body" id="oura-test-msg"></div>
+          </div>
+        </div>
+
+        <!-- Elevation alerts config -->
+        <div class="section-label mt-24">Elevation Alerts</div>
+        <div class="insight-card">
+          <div class="insight-header">
+            <div class="insight-icon body"><svg viewBox="0 0 20 20" fill="none" stroke="var(--calm)" stroke-width="1.5"><path d="M10 2a5 5 0 0 0-5 5c0 4-2 5-2 5h14s-2-1-2-5a5 5 0 0 0-5-5z"/><path d="M8.5 17a2 2 0 0 0 3 0"/></svg></div>
+            <div class="insight-title">Smart Alerts</div>
+          </div>
+          <div class="insight-body">When you open Discern, it checks your Oura data and alerts you if your nervous system is elevated — HRV below baseline, poor sleep, or low readiness. This helps you know when to be extra careful with decisions.</div>
+        </div>
+
+        <!-- Data -->
+        <div class="section-label mt-24">Data</div>
+        <button class="btn-secondary" id="btn-export-data">Export decision journal (JSON)</button>
+        <button class="btn-secondary" id="btn-clear-data" style="color: var(--alert);">Clear all data</button>
+
+        <!-- Baseline info -->
+        <div class="section-label mt-24">Your Baseline</div>
+        <div class="pattern-card" id="baseline-card">
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Average HRV</div>
+            <div class="pattern-stat-value" id="baseline-hrv-avg">—</div>
+          </div>
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">HRV Range</div>
+            <div class="pattern-stat-value" id="baseline-hrv-range">—</div>
+          </div>
+          <div class="pattern-stat">
+            <div class="pattern-stat-label">Last Updated</div>
+            <div class="pattern-stat-value" id="baseline-updated">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="oura.js"></script>
+  <script>
+    // ==================== STATE ====================
+    let currentDecision = '';
+    let currentStakes = 'medium';
+    let currentContext = '';
+    let currentExpected = '';
+    let currentSignal = '';
+    let currentBodyLoc = '';
+    let currentReadiness = 0;
+    let breathInterval = null;
+    let sessionStart = null;
+    let viewingDecisionId = null;
+
+    let hrv = 42, hr = 72, resp = 14;
+
+    // Decision store (localStorage)
+    function getDecisions() {
+      try { return JSON.parse(localStorage.getItem('discern_decisions') || '[]'); }
+      catch { return []; }
+    }
+    function saveDecisions(d) { localStorage.setItem('discern_decisions', JSON.stringify(d)); }
+
+    // Seed demo data if empty
+    function seedDemoData() {
+      if (getDecisions().length > 0) return;
+      const demos = [
+        {
+          id: 'd1', decision: 'Promoted Alex to engineering lead',
+          stakes: 'high', context: 'Alex has strong technical skills but limited management experience. Team of 8.',
+          expected: 'Alex will grow into the role within 6 months. Some initial friction but strong long-term fit.',
+          signal: 'expansion', bodyLoc: 'gut', clarity: 7, readiness: 78,
+          date: '2026-05-15', outcome: 'right',
+          outcomeNotes: 'Alex exceeded expectations. Team engagement scores up 20%.',
+          learning: 'My gut expansion on people decisions has been reliable. Trust it more.',
+          clarityNotes: 'Felt certain despite the resume gap. Something about how the team responds to Alex.'
+        },
+        {
+          id: 'd2', decision: 'Passed on Series B partnership with Meridian',
+          stakes: 'high', context: 'Meridian offered favorable terms but their culture felt misaligned during diligence.',
+          expected: 'We\'ll find a better-aligned partner within 2 quarters.',
+          signal: 'contraction', bodyLoc: 'chest', clarity: 6, readiness: 32,
+          date: '2026-04-22', outcome: 'right',
+          outcomeNotes: 'Meridian pivoted their product 3 months later. Would have been a painful unwinding.',
+          learning: 'Chest contraction on partnerships = values misalignment. Don\'t override with financial logic.',
+          clarityNotes: 'The numbers looked good but something felt off in every meeting.'
+        },
+        {
+          id: 'd3', decision: 'Delayed the product launch by 6 weeks',
+          stakes: 'medium', context: 'QA found edge cases. Team wanted to ship. Board pressure.',
+          expected: 'Extra time will catch critical bugs. Market window still open.',
+          signal: 'stillness', bodyLoc: 'gut', clarity: 8, readiness: 72,
+          date: '2026-06-01', outcome: 'mixed',
+          outcomeNotes: 'Caught 2 critical bugs but competitor shipped first. Net positive but lost some momentum.',
+          learning: 'Stillness meant I had clarity — the delay was right. But 6 weeks was too long. 3 would have been enough.',
+          clarityNotes: 'Calm about the delay itself. The duration was the analytical decision, not the somatic one.'
+        },
+        {
+          id: 'd4', decision: 'Whether to restructure the sales team',
+          stakes: 'high', context: 'Q1 targets missed by 30%. Two senior reps underperforming. New VP of Sales starts next month.',
+          expected: 'Restructure now gives new VP a clean slate.',
+          signal: 'agitation', bodyLoc: 'head', clarity: 4, readiness: 25,
+          date: '2026-06-20', outcome: 'pending',
+          outcomeNotes: '', learning: '',
+          clarityNotes: 'Felt rushed. Too many variables. Need to sit with this longer.'
+        },
+        {
+          id: 'd5', decision: 'Committed to the new pricing model',
+          stakes: 'medium', context: 'Moving from per-seat to usage-based. Some enterprise customers will pay more.',
+          expected: 'Short-term churn of 5-10% but 30% revenue increase within a year.',
+          signal: 'expansion', bodyLoc: 'chest', clarity: 7, readiness: 80,
+          date: '2026-03-10', outcome: 'right',
+          outcomeNotes: 'Churn was 7% but new revenue model brought in 3 enterprise deals. On track for 40% increase.',
+          learning: 'Expansion + chest = aligned with what I believe is right for the business long-term.',
+          clarityNotes: 'Felt like the honest move. Pricing was always undervaluing what we deliver.'
+        }
+      ];
+      saveDecisions(demos);
+    }
+    seedDemoData();
+
+    // Expandable detail section
+    function toggleDetail() {
+      const toggle = document.getElementById('detail-toggle');
+      const content = document.getElementById('detail-expand');
+      toggle.classList.toggle('open');
+      content.classList.toggle('open');
+    }
+
+    // ==================== SCREEN MANAGEMENT ====================
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + id).classList.add('active');
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+      if (tab === 'journal') renderJournal();
+      if (tab === 'patterns') renderPatterns();
+      showScreen(tab === 'home' ? 'home' : tab);
+    }
+
+    document.querySelectorAll('.tab-item[data-tab]').forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+
+    // ==================== HOME FLOW ====================
+    const decisionInput = document.getElementById('decision-input');
+
+    document.querySelectorAll('#decision-tags .tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        document.querySelectorAll('#decision-tags .tag').forEach(t => t.classList.remove('selected'));
+        tag.classList.add('selected');
+        decisionInput.value = tag.dataset.val;
+        document.getElementById('btn-checkin').disabled = false;
+      });
+    });
+
+    decisionInput.addEventListener('input', () => {
+      document.getElementById('btn-checkin').disabled = !decisionInput.value.trim();
+      document.querySelectorAll('#decision-tags .tag').forEach(t => t.classList.remove('selected'));
+    });
+
+    document.querySelectorAll('#stakes-row .stake-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#stakes-row .stake-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        currentStakes = btn.dataset.stakes;
+      });
+    });
+
+    document.getElementById('btn-checkin').addEventListener('click', () => {
+      currentDecision = decisionInput.value.trim();
+      currentContext = document.getElementById('context-input').value.trim();
+      currentExpected = document.getElementById('expected-input').value.trim();
+      sessionStart = Date.now();
+      document.getElementById('signal-sub').textContent =
+        `As you hold "${currentDecision.toLowerCase()}" in mind, notice what shifts in your body.`;
+      simulateBioShift('elevated');
+      showScreen('signal');
+    });
+
+    // ==================== SIGNAL SCREEN ====================
+    document.querySelectorAll('#signal-grid .signal-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('#signal-grid .signal-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        currentSignal = card.dataset.signal;
+        checkSignalReady();
+      });
+    });
+
+    document.querySelectorAll('#bodyloc-grid .signal-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('#bodyloc-grid .signal-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        currentBodyLoc = card.dataset.bodyloc;
+        checkSignalReady();
+      });
+    });
+
+    document.getElementById('clarity-slider').addEventListener('input', e => {
+      document.getElementById('clarity-val').textContent = e.target.value;
+    });
+
+    function checkSignalReady() {
+      document.getElementById('btn-center').disabled = !(currentSignal && currentBodyLoc);
+    }
+
+    document.getElementById('btn-center').addEventListener('click', () => {
+      showScreen('breathe');
+      startBreathing();
+    });
+
+    // ==================== BREATHWORK ====================
+    function startBreathing() {
+      const progressEl = document.getElementById('breathe-progress');
+      progressEl.innerHTML = '';
+      for (let i = 0; i < 6; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'breathe-dot';
+        progressEl.appendChild(dot);
+      }
+
+      document.getElementById('breathe-circle').classList.add('active');
+      document.getElementById('breathe-timer').textContent = '2:00';
+      document.getElementById('breathe-phase').textContent = 'Ready';
+      document.getElementById('breathe-text').textContent = 'Start';
+
+      let totalSeconds = 120;
+      const phases = ['Breathe in', 'Hold', 'Breathe out', 'Hold'];
+      const durations = [4, 4, 6, 2];
+      let phaseIndex = 0, phaseTime = 0, cycles = 0;
+
+      breathInterval = setInterval(() => {
+        totalSeconds--;
+        if (totalSeconds <= 0) { completeBreathing(); return; }
+
+        document.getElementById('breathe-timer').textContent =
+          `${Math.floor(totalSeconds/60)}:${(totalSeconds%60).toString().padStart(2,'0')}`;
+
+        phaseTime++;
+        if (phaseTime >= durations[phaseIndex]) {
+          phaseTime = 0;
+          phaseIndex = (phaseIndex + 1) % 4;
+          if (phaseIndex === 0) {
+            cycles++;
+            const dots = progressEl.querySelectorAll('.breathe-dot');
+            if (cycles <= 6) dots[cycles-1].classList.add('done');
+          }
+        }
+
+        document.getElementById('breathe-phase').textContent = phases[phaseIndex];
+        document.getElementById('breathe-text').textContent =
+          phaseIndex === 0 ? 'In' : phaseIndex === 2 ? 'Out' : '···';
+
+        const progress = 1 - (totalSeconds / 120);
+        const aLevel = 65 - (progress * 40);
+        const af = document.getElementById('breathe-arousal');
+        const as = document.getElementById('breathe-state');
+        af.style.width = aLevel + '%';
+        if (aLevel < 35) { af.style.background = 'var(--calm)'; as.style.color = 'var(--calm)'; as.textContent = 'Regulated'; }
+        else if (aLevel < 50) { af.style.background = 'var(--warm)'; as.style.color = 'var(--warm)'; as.textContent = 'Settling'; }
+      }, 1000);
+
+      setTimeout(() => { document.getElementById('btn-to-reflect').style.display = 'block'; }, 10000);
+    }
+
+    function stopBreathing() {
+      if (breathInterval) clearInterval(breathInterval);
+      document.getElementById('breathe-circle').classList.remove('active');
+    }
+
+    function completeBreathing() {
+      stopBreathing();
+      buildReflection();
+      showScreen('reflect');
+    }
+
+    document.getElementById('btn-to-reflect').addEventListener('click', completeBreathing);
+
+    // ==================== REFLECTION ====================
+    function buildReflection() {
+      const clarity = parseInt(document.getElementById('clarity-slider').value);
+      let readiness = 50;
+      if (currentSignal === 'expansion') readiness += 25;
+      else if (currentSignal === 'stillness') readiness += 15;
+      else if (currentSignal === 'contraction') readiness -= 15;
+      else if (currentSignal === 'agitation') readiness -= 25;
+      if (clarity >= 7) readiness += 15;
+      else if (clarity <= 3) readiness -= 15;
+      if (currentStakes === 'high' && readiness < 60) readiness -= 10;
+      readiness = Math.max(10, Math.min(95, readiness));
+      currentReadiness = readiness;
+
+      const gaugeFill = document.getElementById('gauge-fill');
+      const offset = 452 - (readiness / 100) * 452;
+      setTimeout(() => {
+        gaugeFill.style.strokeDashoffset = offset;
+        if (readiness >= 70) gaugeFill.style.stroke = 'var(--calm)';
+        else if (readiness >= 40) gaugeFill.style.stroke = 'var(--warm)';
+        else gaugeFill.style.stroke = 'var(--alert)';
+      }, 300);
+
+      document.getElementById('gauge-value').textContent = readiness + '%';
+
+      const v = document.getElementById('readiness-verdict');
+      const s = document.getElementById('readiness-sub');
+      if (readiness >= 70) {
+        v.textContent = 'Ready to proceed'; v.style.color = 'var(--calm)';
+        s.textContent = 'Your body is signaling alignment. You have the clarity to act.';
+      } else if (readiness >= 40) {
+        v.textContent = 'Proceed with awareness'; v.style.color = 'var(--warm)';
+        s.textContent = 'Something is worth paying attention to. Decide, but stay curious about what your body is flagging.';
+      } else {
+        v.textContent = 'Wait — more clarity needed'; v.style.color = 'var(--alert)';
+        s.textContent = 'Your nervous system is activated. You may not have full access to your discernment right now.';
+      }
+
+      const signalTexts = {
+        expansion: `Your body opened — energy, leaning in. When thinking about "${currentDecision.toLowerCase()}", your system says yes.`,
+        contraction: `Your body pulled back — a protective response. Something in your system says "not yet" or "not this way."`,
+        stillness: `Centered stillness. You likely already have clarity — trust what emerges from this quiet.`,
+        agitation: `Buzzing, restless energy. Your nervous system is activated around this. Could be high stakes or something unresolved being triggered.`
+      };
+      document.getElementById('insight-signal').textContent = signalTexts[currentSignal];
+
+      const locTexts = {
+        gut: 'You felt this in your gut — the seat of instinct. Gut signals carry information the analytical mind hasn\'t processed yet.',
+        chest: 'You felt this in your chest — values and care. This often signals whether a decision aligns with what matters most to you.',
+        throat: 'Signal in your throat — connected to voice and truth. What would you say if you fully trusted yourself?',
+        head: 'Primarily in your head — analysis mode. The body often has the answer before the mind. Try dropping attention lower next time.'
+      };
+      document.getElementById('insight-nervous').textContent = locTexts[currentBodyLoc];
+
+      const stakeTexts = {
+        high: 'High stakes: is your decision coming from clarity or pressure? The two feel very different in the body.',
+        medium: 'Your body\'s signal is a data point alongside your analysis. Let them inform each other.',
+        low: 'Lower stakes — good practice for building somatic awareness you can carry into bigger moments.'
+      };
+      document.getElementById('insight-discernment').textContent = stakeTexts[currentStakes];
+    }
+
+    // ==================== SAVE DECISION ====================
+    document.getElementById('btn-save-decision').addEventListener('click', () => {
+      const decisions = getDecisions();
+      const newDecision = {
+        id: 'd' + Date.now(),
+        decision: currentDecision,
+        stakes: currentStakes,
+        context: currentContext,
+        expected: currentExpected,
+        signal: currentSignal,
+        bodyLoc: currentBodyLoc,
+        clarity: parseInt(document.getElementById('clarity-slider').value),
+        readiness: currentReadiness,
+        date: new Date().toISOString().split('T')[0],
+        outcome: 'pending',
+        outcomeNotes: '',
+        learning: '',
+        clarityNotes: document.getElementById('clarity-journal').value.trim()
+      };
+      decisions.unshift(newDecision);
+      saveDecisions(decisions);
+      showScreen('complete');
+    });
+
+    // ==================== JOURNAL ====================
+    function renderJournal(filter = 'all') {
+      const decisions = getDecisions();
+      const list = document.getElementById('decision-list');
+      document.getElementById('journal-count').textContent = decisions.length + ' decisions';
+
+      const filtered = filter === 'all' ? decisions :
+        filter === 'pending' ? decisions.filter(d => d.outcome === 'pending' || !d.outcome) :
+        decisions.filter(d => d.outcome === filter);
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon" style="font-size: 32px; opacity: 0.3;">◫</div>
+            <div class="empty-title">${filter === 'all' ? 'No decisions yet' : 'None found'}</div>
+            <div class="empty-desc">${filter === 'all' ? 'Complete a check-in to start building your decision journal.' : 'No decisions match this filter.'}</div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(d => {
+        const stakeClass = `badge-stakes-${d.stakes}`;
+        const outcomeClass = d.outcome === 'right' ? 'badge-right' : d.outcome === 'wrong' ? 'badge-wrong' :
+          d.outcome === 'mixed' ? 'badge-mixed' : 'badge-pending';
+        const outcomeLabel = d.outcome === 'right' ? 'Right call' : d.outcome === 'wrong' ? 'Wrong call' :
+          d.outcome === 'mixed' ? 'Mixed' : 'Pending';
+        const signalIcons = { expansion: '↗', contraction: '↙', stillness: '○', agitation: '⚡' };
+        const barColor = d.readiness >= 70 ? 'var(--calm)' : d.readiness >= 40 ? 'var(--warm)' : 'var(--alert)';
+
+        return `<div class="decision-item" onclick="openDecision('${d.id}')">
+          <div class="decision-item-header">
+            <div class="decision-item-title">${d.decision}</div>
+            <div class="decision-item-date">${formatDate(d.date)}</div>
+          </div>
+          <div class="decision-item-meta">
+            <span class="decision-badge ${stakeClass}">${d.stakes}</span>
+            <span class="badge-signal">${signalIcons[d.signal] || ''} ${d.signal}</span>
+            <span class="decision-badge badge-outcome ${outcomeClass}">${outcomeLabel}</span>
+          </div>
+          <div class="decision-item-readiness">
+            <span class="mini-readiness-label">Readiness ${d.readiness}%</span>
+            <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${d.readiness}%;background:${barColor}"></div></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function formatDate(dateStr) {
+      const d = new Date(dateStr + 'T12:00:00');
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    // Filters
+    document.querySelectorAll('#filter-row .filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#filter-row .filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderJournal(btn.dataset.filter);
+      });
+    });
+
+    // ==================== DECISION DETAIL ====================
+    function openDecision(id) {
+      viewingDecisionId = id;
+      const d = getDecisions().find(x => x.id === id);
+      if (!d) return;
+
+      document.getElementById('detail-title').textContent = d.decision;
+      document.getElementById('detail-date').textContent = formatDate(d.date) + ' · ' + d.stakes + ' stakes';
+      document.getElementById('detail-context').textContent = d.context || 'No context recorded.';
+      document.getElementById('detail-expected').textContent = d.expected || 'No expected outcome recorded.';
+
+      const signalIcons = { expansion: '↗', contraction: '↙', stillness: '○', agitation: '⚡' };
+      const locNames = { gut: 'gut', chest: 'chest/heart', throat: 'throat', head: 'head' };
+      document.getElementById('detail-signal').textContent =
+        `${signalIcons[d.signal] || ''} ${d.signal} · felt in ${locNames[d.bodyLoc] || 'body'} · clarity ${d.clarity}/10 · readiness ${d.readiness}%`;
+
+      document.getElementById('detail-clarity').textContent = d.clarityNotes || 'No clarity notes recorded.';
+      document.getElementById('detail-outcome-notes').value = d.outcomeNotes || '';
+      document.getElementById('detail-learning').value = d.learning || '';
+
+      document.querySelectorAll('#outcome-grid .outcome-btn').forEach(b => {
+        b.classList.toggle('selected', b.dataset.outcome === d.outcome);
+      });
+
+      showScreen('detail');
+    }
+
+    document.querySelectorAll('#outcome-grid .outcome-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#outcome-grid .outcome-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+    });
+
+    document.getElementById('btn-save-outcome').addEventListener('click', () => {
+      const decisions = getDecisions();
+      const d = decisions.find(x => x.id === viewingDecisionId);
+      if (!d) return;
+
+      const selectedOutcome = document.querySelector('#outcome-grid .outcome-btn.selected');
+      if (selectedOutcome) d.outcome = selectedOutcome.dataset.outcome;
+      d.outcomeNotes = document.getElementById('detail-outcome-notes').value.trim();
+      d.learning = document.getElementById('detail-learning').value.trim();
+
+      saveDecisions(decisions);
+      renderJournal();
+      showScreen('journal');
+    });
+
+    // ==================== PATTERNS ====================
+    function renderPatterns() {
+      const decisions = getDecisions();
+      const reviewed = decisions.filter(d => d.outcome && d.outcome !== 'pending' && d.outcome !== 'tbd');
+
+      if (reviewed.length === 0) {
+        document.getElementById('accuracy-number').textContent = '—';
+        document.getElementById('accuracy-sub').textContent = 'Mark outcomes on past decisions to see patterns';
+        return;
+      }
+
+      const right = reviewed.filter(d => d.outcome === 'right').length;
+      const accuracy = Math.round((right / reviewed.length) * 100);
+      document.getElementById('accuracy-number').textContent = accuracy + '%';
+      document.getElementById('accuracy-sub').textContent = `based on ${reviewed.length} reviewed decision${reviewed.length === 1 ? '' : 's'}`;
+
+      // Signal accuracy
+      ['expansion', 'contraction', 'stillness', 'agitation'].forEach(sig => {
+        const sigDecisions = reviewed.filter(d => d.signal === sig);
+        const el = document.getElementById('pat-' + sig);
+        if (sigDecisions.length === 0) { el.textContent = '—'; return; }
+        const sigRight = sigDecisions.filter(d => d.outcome === 'right').length;
+        el.textContent = `${Math.round((sigRight / sigDecisions.length) * 100)}% (${sigDecisions.length})`;
+      });
+
+      // Body location accuracy
+      ['gut', 'chest', 'throat', 'head'].forEach(loc => {
+        const locDecisions = reviewed.filter(d => d.bodyLoc === loc);
+        const el = document.getElementById('pat-' + loc);
+        if (locDecisions.length === 0) { el.textContent = '—'; return; }
+        const locRight = locDecisions.filter(d => d.outcome === 'right').length;
+        el.textContent = `${Math.round((locRight / locDecisions.length) * 100)}% (${locDecisions.length})`;
+      });
+
+      // Stakes accuracy
+      ['high', 'medium', 'low'].forEach(st => {
+        const stDecisions = reviewed.filter(d => d.stakes === st);
+        const el = document.getElementById('pat-' + st);
+        if (stDecisions.length === 0) { el.textContent = '—'; return; }
+        const stRight = stDecisions.filter(d => d.outcome === 'right').length;
+        el.textContent = `${Math.round((stRight / stDecisions.length) * 100)}% (${stDecisions.length})`;
+      });
+
+      // Generate insight
+      const insightEl = document.getElementById('pattern-insight-body');
+      if (reviewed.length >= 3) {
+        const bestSignal = ['expansion', 'contraction', 'stillness', 'agitation']
+          .map(sig => {
+            const s = reviewed.filter(d => d.signal === sig);
+            if (s.length < 2) return null;
+            return { sig, acc: s.filter(d => d.outcome === 'right').length / s.length, count: s.length };
+          })
+          .filter(Boolean)
+          .sort((a, b) => b.acc - a.acc)[0];
+
+        const bestLoc = ['gut', 'chest', 'throat', 'head']
+          .map(loc => {
+            const l = reviewed.filter(d => d.bodyLoc === loc);
+            if (l.length < 2) return null;
+            return { loc, acc: l.filter(d => d.outcome === 'right').length / l.length, count: l.length };
+          })
+          .filter(Boolean)
+          .sort((a, b) => b.acc - a.acc)[0];
+
+        let insight = '';
+        if (bestSignal) {
+          insight += `Your most reliable signal is ${bestSignal.sig} (${Math.round(bestSignal.acc * 100)}% accuracy across ${bestSignal.count} decisions). `;
+        }
+        if (bestLoc) {
+          insight += `Your ${bestLoc.loc} is your most accurate body center (${Math.round(bestLoc.acc * 100)}%).`;
+        }
+        if (!insight) insight = 'Keep logging decisions to reveal your patterns.';
+        insightEl.textContent = insight;
+      }
+    }
+
+    // ==================== BIOMETRIC SIM ====================
+    function simulateBioShift(state) {
+      if (state === 'elevated') {
+        hrv = 32 + Math.floor(Math.random() * 8);
+        hr = 78 + Math.floor(Math.random() * 12);
+        resp = 17 + Math.floor(Math.random() * 4);
+      } else {
+        hrv = 45 + Math.floor(Math.random() * 10);
+        hr = 68 + Math.floor(Math.random() * 6);
+        resp = 12 + Math.floor(Math.random() * 3);
+      }
+      updateBio();
+    }
+
+    function updateBio() {
+      document.getElementById('hrv-value').innerHTML = `${hrv} <span class="metric-unit">ms</span>`;
+      document.getElementById('hr-value').innerHTML = `${hr} <span class="metric-unit">bpm</span>`;
+      document.getElementById('resp-value').innerHTML = `${resp} <span class="metric-unit">/m</span>`;
+    }
+
+    function animateHRV() {
+      const path = document.getElementById('hrv-path');
+      let d = 'M0,25';
+      for (let x = 10; x <= 380; x += 10) {
+        const v = hrv > 40 ? 10 : 5;
+        const y = 25 + (Math.sin(x * 0.05 + Date.now() * 0.002) * v) + (Math.random() - 0.5) * 3;
+        d += ` L${x},${y.toFixed(1)}`;
+      }
+      path.setAttribute('d', d);
+      requestAnimationFrame(animateHRV);
+    }
+    animateHRV();
+
+    setInterval(() => {
+      hrv += Math.floor(Math.random() * 3) - 1;
+      hr += Math.floor(Math.random() * 3) - 1;
+      hrv = Math.max(25, Math.min(65, hrv));
+      hr = Math.max(58, Math.min(95, hr));
+      updateBio();
+    }, 3000);
+
+    // ==================== RESET ====================
+    function resetHome() {
+      currentDecision = ''; currentSignal = ''; currentBodyLoc = '';
+      currentContext = ''; currentExpected = '';
+      decisionInput.value = '';
+      document.getElementById('context-input').value = '';
+      document.getElementById('expected-input').value = '';
+      document.getElementById('clarity-journal').value = '';
+      document.getElementById('btn-checkin').disabled = true;
+      document.getElementById('btn-center').disabled = true;
+      document.getElementById('btn-to-reflect').style.display = 'none';
+      document.getElementById('breathe-arousal').style.width = '65%';
+      document.getElementById('breathe-arousal').style.background = 'var(--alert)';
+      document.getElementById('breathe-state').textContent = 'Elevated';
+      document.getElementById('breathe-state').style.color = 'var(--alert)';
+      document.getElementById('gauge-fill').style.strokeDashoffset = '452';
+      document.querySelectorAll('.tag').forEach(t => t.classList.remove('selected'));
+      document.querySelectorAll('.signal-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('#stakes-row .stake-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelector('[data-stakes="medium"]').classList.add('selected');
+      currentStakes = 'medium';
+      simulateBioShift('calm');
+    }
+
+    // Override switchTab to reset when going home
+    const origSwitchTab = switchTab;
+    switchTab = function(tab) {
+      if (tab === 'home') resetHome();
+      if (tab === 'settings') renderSettings();
+      origSwitchTab(tab);
+    };
+
+    // ==================== OURA INTEGRATION ====================
+
+    // Settings screen handlers
+    function renderSettings() {
+      const connected = OuraAPI.isConnected();
+      const statusCard = document.getElementById('oura-status-card');
+      const statusText = document.getElementById('oura-status-text');
+      const tokenInput = document.getElementById('oura-token-input');
+      const connectBtn = document.getElementById('btn-connect-oura');
+      const disconnectBtn = document.getElementById('btn-disconnect-oura');
+
+      if (connected) {
+        statusCard.classList.add('oura-connected');
+        statusText.textContent = 'Connected. Your Oura Ring data is being used for live biometrics and elevation detection.';
+        tokenInput.value = '••••••••••••••••';
+        tokenInput.disabled = true;
+        connectBtn.style.display = 'none';
+        disconnectBtn.style.display = 'block';
+      } else {
+        statusCard.classList.remove('oura-connected');
+        statusText.textContent = 'Not connected. Add your Personal Access Token to see live biometrics.';
+        tokenInput.value = '';
+        tokenInput.disabled = false;
+        connectBtn.style.display = 'block';
+        disconnectBtn.style.display = 'none';
+      }
+
+      // Baseline info
+      const baseline = OuraAPI.getBaseline();
+      if (baseline) {
+        document.getElementById('baseline-hrv-avg').textContent = baseline.hrvAvg + ' ms';
+        document.getElementById('baseline-hrv-range').textContent = baseline.hrvMin + '–' + baseline.hrvMax + ' ms';
+        document.getElementById('baseline-updated').textContent = new Date(baseline.updatedAt).toLocaleDateString();
+      }
+    }
+
+    document.getElementById('btn-connect-oura').addEventListener('click', async () => {
+      const token = document.getElementById('oura-token-input').value.trim();
+      if (!token) return;
+
+      const resultEl = document.getElementById('oura-test-result');
+      const msgEl = document.getElementById('oura-test-msg');
+      resultEl.style.display = 'block';
+      msgEl.textContent = 'Testing connection...';
+      msgEl.style.color = 'var(--text-muted)';
+
+      OuraAPI.setToken(token);
+      const result = await OuraAPI.testConnection();
+
+      if (result.success) {
+        msgEl.textContent = 'Connected successfully! Fetching your baseline data...';
+        msgEl.style.color = 'var(--calm)';
+
+        // Fetch baseline and current state
+        await OuraAPI.updateBaseline();
+        await refreshOuraData();
+        renderSettings();
+
+        setTimeout(() => { resultEl.style.display = 'none'; }, 3000);
+      } else {
+        msgEl.textContent = 'Connection failed: ' + result.error;
+        msgEl.style.color = 'var(--alert)';
+        OuraAPI.clearToken();
+      }
+    });
+
+    document.getElementById('btn-disconnect-oura').addEventListener('click', () => {
+      OuraAPI.clearToken();
+      renderSettings();
+      // Revert to simulated
+      document.getElementById('bio-source-badge').className = 'sim-badge';
+      document.getElementById('bio-source-badge').textContent = 'Simulated';
+      document.getElementById('elevation-banner').classList.remove('visible');
+    });
+
+    document.getElementById('btn-export-data').addEventListener('click', () => {
+      const data = {
+        decisions: getDecisions(),
+        baseline: OuraAPI.getBaseline(),
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'discern-journal-export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('btn-clear-data').addEventListener('click', () => {
+      if (confirm('This will delete all your decisions, patterns, and Oura connection. Are you sure?')) {
+        localStorage.removeItem('discern_decisions');
+        OuraAPI.clearToken();
+        renderSettings();
+        seedDemoData();
+      }
+    });
+
+    // Fetch Oura data and update UI
+    async function refreshOuraData() {
+      if (!OuraAPI.isConnected()) return;
+
+      try {
+        const state = await OuraAPI.getCurrentState();
+
+        // Update biometrics display with real data
+        if (state.heartRate) {
+          hr = state.heartRate;
+        }
+        if (state.hrv) {
+          hrv = state.hrv;
+        }
+        updateBio();
+
+        // Update source badge
+        const badge = document.getElementById('bio-source-badge');
+        badge.className = 'live-badge';
+        badge.innerHTML = '<span class="dot"></span> Oura Live';
+
+        // Check for elevation
+        const elevation = OuraAPI.assessElevation(state);
+        showElevationBanner(elevation);
+
+      } catch (err) {
+        console.error('Failed to refresh Oura data:', err);
+      }
+    }
+
+    function showElevationBanner(elevation) {
+      const banner = document.getElementById('elevation-banner');
+      if (!elevation || !elevation.isElevated) {
+        banner.classList.remove('visible');
+        return;
+      }
+
+      banner.classList.add('visible');
+      if (elevation.elevationScore >= 3) {
+        banner.classList.remove('warning');
+        document.getElementById('elevation-title').textContent = 'Your system is elevated';
+      } else {
+        banner.classList.add('warning');
+        document.getElementById('elevation-title').textContent = 'Heads up — some elevation detected';
+      }
+
+      document.getElementById('elevation-body').textContent = elevation.recommendation;
+
+      const signalsEl = document.getElementById('elevation-signals');
+      signalsEl.innerHTML = elevation.signals.map(s =>
+        `<div class="elevation-signal-item"><div class="elevation-signal-dot"></div><span>${s.message}</span></div>`
+      ).join('');
+    }
+
+    // On app load: check Oura connection and refresh
+    (async function initOura() {
+      if (OuraAPI.isConnected()) {
+        // Show cached data immediately
+        const cached = OuraAPI.getCachedState();
+        if (cached) {
+          if (cached.heartRate) hr = cached.heartRate;
+          if (cached.hrv) hrv = cached.hrv;
+          updateBio();
+
+          const badge = document.getElementById('bio-source-badge');
+          badge.className = 'live-badge';
+          badge.innerHTML = '<span class="dot"></span> Oura Live';
+
+          const elevation = OuraAPI.assessElevation(cached);
+          showElevationBanner(elevation);
+        }
+
+        // Then refresh in background
+        refreshOuraData();
+
+        // Update baseline weekly
+        const baseline = OuraAPI.getBaseline();
+        if (!baseline || Date.now() - new Date(baseline.updatedAt).getTime() > 86400000) {
+          OuraAPI.updateBaseline();
+        }
+      }
+    })();
+
+    // Refresh Oura data every 5 minutes when connected
+    setInterval(() => {
+      if (OuraAPI.isConnected()) refreshOuraData();
+    }, 300000);
+  </script>
+</body>
+</html>
