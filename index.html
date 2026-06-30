@@ -856,6 +856,73 @@
       height: 100%;
     }
 
+    /* Tooltip */
+    .info-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--text-muted);
+      background: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-style: italic;
+      cursor: pointer;
+      margin-left: 6px;
+      transition: all 0.2s;
+      vertical-align: middle;
+      padding: 0;
+      line-height: 1;
+    }
+    .info-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .tooltip-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .tooltip-overlay.visible { display: flex; }
+    .tooltip-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 340px;
+      width: 100%;
+    }
+    .tooltip-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .tooltip-body {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .tooltip-close {
+      display: block;
+      margin-top: 16px;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+    }
+
     /* Expandable detail section */
     .expand-toggle {
       display: flex;
@@ -985,7 +1052,7 @@
         <div class="greeting" style="font-size: 22px;">Think about this decision. Then pause and scan.</div>
         <div class="subtitle" id="signal-sub">As you hold this in mind, notice what shifts in your body.</div>
 
-        <div class="section-label">What's your body saying?</div>
+        <div class="section-label">What's your body saying? <button class="info-btn" onclick="showTooltip('signal')">i</button></div>
         <div class="signal-grid" id="signal-grid">
           <div class="signal-card" data-signal="expansion">
             <div class="signal-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--calm)" stroke-width="2"><path d="M7 17L17 7M17 7H10M17 7V14"/></svg></div>
@@ -1035,7 +1102,7 @@
 
         <div class="slider-section mt-16">
           <div class="slider-labels">
-            <span>Signal Clarity</span>
+            <span>Signal Clarity <button class="info-btn" onclick="showTooltip('clarity')">i</button></span>
             <span class="slider-value" id="clarity-val">5</span>
           </div>
           <input type="range" min="1" max="10" value="5" id="clarity-slider">
@@ -1403,6 +1470,15 @@
     </div>
   </div>
 
+    <!-- Tooltip overlay -->
+    <div class="tooltip-overlay" id="tooltip-overlay" onclick="hideTooltip()">
+      <div class="tooltip-card" onclick="event.stopPropagation()">
+        <div class="tooltip-title" id="tooltip-title"></div>
+        <div class="tooltip-body" id="tooltip-body"></div>
+        <button class="tooltip-close" onclick="hideTooltip()">Got it</button>
+      </div>
+    </div>
+
   <script src="oura.js"></script>
   <script>
     // ==================== STATE ====================
@@ -1410,7 +1486,7 @@
     let currentStakes = 'medium';
     let currentContext = '';
     let currentExpected = '';
-    let currentSignal = '';
+    let currentSignals = [];
     let currentBodyLoc = '';
     let currentReadiness = 0;
     let breathInterval = null;
@@ -1484,6 +1560,30 @@
     }
     seedDemoData();
 
+    // Tooltips
+    const tooltips = {
+      clarity: {
+        title: 'Signal Clarity',
+        body: 'How clearly can you feel your body\'s signal about this decision? A low number means the signal is vague or confusing. A high number means you have a clear, unmistakable felt sense — even if you can\'t explain it logically yet.'
+      },
+      signal: {
+        title: 'Body Signals',
+        body: 'When you think about this decision, your body responds before your mind catches up. You might notice opening and energy (expansion), tightening or pulling back (contraction), calm neutrality (stillness), or buzzing restlessness (agitation). You can select more than one — signals often blend.'
+      }
+    };
+
+    function showTooltip(key) {
+      const t = tooltips[key];
+      if (!t) return;
+      document.getElementById('tooltip-title').textContent = t.title;
+      document.getElementById('tooltip-body').textContent = t.body;
+      document.getElementById('tooltip-overlay').classList.add('visible');
+    }
+
+    function hideTooltip() {
+      document.getElementById('tooltip-overlay').classList.remove('visible');
+    }
+
     // Expandable detail section
     function toggleDetail() {
       const toggle = document.getElementById('detail-toggle');
@@ -1549,9 +1649,13 @@
     // ==================== SIGNAL SCREEN ====================
     document.querySelectorAll('#signal-grid .signal-card').forEach(card => {
       card.addEventListener('click', () => {
-        document.querySelectorAll('#signal-grid .signal-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        currentSignal = card.dataset.signal;
+        card.classList.toggle('selected');
+        const sig = card.dataset.signal;
+        if (currentSignals.includes(sig)) {
+          currentSignals = currentSignals.filter(s => s !== sig);
+        } else {
+          currentSignals.push(sig);
+        }
         checkSignalReady();
       });
     });
@@ -1570,7 +1674,7 @@
     });
 
     function checkSignalReady() {
-      document.getElementById('btn-center').disabled = !(currentSignal && currentBodyLoc);
+      document.getElementById('btn-center').disabled = !(currentSignals.length > 0 && currentBodyLoc);
     }
 
     document.getElementById('btn-center').addEventListener('click', () => {
@@ -1649,10 +1753,8 @@
     function buildReflection() {
       const clarity = parseInt(document.getElementById('clarity-slider').value);
       let readiness = 50;
-      if (currentSignal === 'expansion') readiness += 25;
-      else if (currentSignal === 'stillness') readiness += 15;
-      else if (currentSignal === 'contraction') readiness -= 15;
-      else if (currentSignal === 'agitation') readiness -= 25;
+      const signalScores = { expansion: 25, stillness: 15, contraction: -15, agitation: -25 };
+      currentSignals.forEach(sig => { readiness += (signalScores[sig] || 0); });
       if (clarity >= 7) readiness += 15;
       else if (clarity <= 3) readiness -= 15;
       if (currentStakes === 'high' && readiness < 60) readiness -= 10;
@@ -1689,7 +1791,8 @@
         stillness: `Centered stillness. You likely already have clarity — trust what emerges from this quiet.`,
         agitation: `Buzzing, restless energy. Your nervous system is activated around this. Could be high stakes or something unresolved being triggered.`
       };
-      document.getElementById('insight-signal').textContent = signalTexts[currentSignal];
+      const signalSummary = currentSignals.map(sig => signalTexts[sig]).filter(Boolean).join(' ');
+      document.getElementById('insight-signal').textContent = signalSummary;
 
       const locTexts = {
         gut: 'You felt this in your gut — the seat of instinct. Gut signals carry information the analytical mind hasn\'t processed yet.',
@@ -1716,7 +1819,7 @@
         stakes: currentStakes,
         context: currentContext,
         expected: currentExpected,
-        signal: currentSignal,
+        signal: currentSignals.join('+'),
         bodyLoc: currentBodyLoc,
         clarity: parseInt(document.getElementById('clarity-slider').value),
         readiness: currentReadiness,
@@ -1960,7 +2063,7 @@
 
     // ==================== RESET ====================
     function resetHome() {
-      currentDecision = ''; currentSignal = ''; currentBodyLoc = '';
+      currentDecision = ''; currentSignals = []; currentBodyLoc = '';
       currentContext = ''; currentExpected = '';
       decisionInput.value = '';
       document.getElementById('context-input').value = '';
